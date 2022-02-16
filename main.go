@@ -1,10 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+
+	"spenmo_wallet/controllers"
 
 	"github.com/gorilla/mux"
 )
@@ -13,12 +14,6 @@ type User struct {
 	Id    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
-}
-
-type Wallet struct {
-	Id             string `json:"id"`
-	PersonableId   string `json:"personable_id"`
-	PersonableType string `json:"personable_type"`
 }
 
 type Card struct {
@@ -30,33 +25,11 @@ type Card struct {
 }
 
 var Users []User
-var Wallets []Wallet
 var Cards []Card
 
 func rootPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the homepage")
 	fmt.Println("Endpoint Hit: rootPage")
-}
-
-func indexWalletsApi(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint Hit: users")
-	json.NewEncoder(w).Encode(Users)
-}
-func createWalletsApi(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint Hit: users")
-	json.NewEncoder(w).Encode(Users)
-}
-func showWalletsApi(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint Hit: users")
-	json.NewEncoder(w).Encode(Users)
-}
-func updateWalletsApi(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint Hit: users")
-	json.NewEncoder(w).Encode(Users)
-}
-func deleteWalletsApi(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint Hit: users")
-	json.NewEncoder(w).Encode(Users)
 }
 
 // func userShowPage(w http.ResponseWriter, r *http.Request) {
@@ -90,11 +63,11 @@ func main() {
 	// router.HandleFunc("/users", usersPage).Methods("POST")
 	// router.HandleFunc("/users/{id}", usersPage).Methods("GET")
 
-	router.HandleFunc("/wallets", indexWalletsApi)
-	router.HandleFunc("/wallets", createWalletsApi).Methods("POST")
-	router.HandleFunc("/wallets/{id}", showWalletsApi).Methods("GET")
-	router.HandleFunc("/wallets/{id}", updateWalletsApi).Methods("PUT")
-	router.HandleFunc("/wallets/{id}", deleteWalletsApi).Methods("DELETE")
+	router.HandleFunc("/wallets", controllers.IndexWallet).Methods("GET")
+	router.HandleFunc("/wallets", controllers.CreateWallet).Methods("POST")
+	router.HandleFunc("/wallets/{id}", controllers.ShowWallet).Methods("GET")
+	// router.HandleFunc("/wallets/{id}", updateWalletsApi).Methods("PUT")
+	// router.HandleFunc("/wallets/{id}", deleteWalletsApi).Methods("DELETE")
 
 	// router.HandleFunc("/cards", usersPage)
 	// router.HandleFunc("/cards", userCardsPage).Methods("POST")
