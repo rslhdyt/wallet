@@ -1,0 +1,58 @@
+version: '3'
+
+networks:
+  spenmo:
+    driver: bridge
+
+volumes:
+  mysql:
+    driver: local
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: ./docker/app/Dockerfile
+    ports:
+      - '8081:8081'
+    volumes:
+      - '.:/var/www/html'
+    networks:
+      - spenmo
+    command: /server
+    depends_on:
+      - mysql
+  mysql:
+    build:
+      context: ./docker/mysql
+    ports:
+      - '3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: 'spenmo'
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: 'spenmo'
+      MYSQL_USER: 'spenmo_user'
+      MYSQL_PASSWORD: 'spenmo'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - 'mysql:/var/lib/mysql'
+      - ./docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    networks:
+      - spenmo
+  locust:
+    image: locustio/locust
+    ports:
+     - "8089:8089"
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --master -H http://app:8081
+    networks:
+      - spenmo
+  
+  worker:
+    image: locustio/locust
+    volumes:
+      - ./:/mnt/locust
+    command: -f /mnt/locust/locustfile.py --worker --master-host locust -H http://app:8081
+    networks:
+      - spenmo
