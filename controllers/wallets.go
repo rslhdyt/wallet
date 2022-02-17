@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"spenmo_wallet/database"
@@ -12,8 +11,7 @@ import (
 )
 
 func IndexWallet(w http.ResponseWriter, r *http.Request) {
-	db, _ := database.Connect()
-	selectQuery, err := db.Query("SELECT * FROM wallets ORDER BY id DESC")
+	selectQuery, err := database.Connector.Query("SELECT * FROM wallets ORDER BY id DESC")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -37,29 +35,23 @@ func IndexWallet(w http.ResponseWriter, r *http.Request) {
 		wallets = append(wallets, wallet)
 	}
 
-	defer db.Close()
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(wallets)
 }
 
 func CreateWallet(w http.ResponseWriter, r *http.Request) {
-	db, _ := database.Connect()
-
 	requestBody, _ := ioutil.ReadAll(r.Body)
 	var wallet models.Wallet
 	json.Unmarshal(requestBody, &wallet)
 
 	if r.Method == "POST" {
-		insForm, err := db.Prepare("INSERT INTO wallets(personable_id, personable_type) VALUES(?,?)")
+		insForm, err := database.Connector.Prepare("INSERT INTO wallets(personable_id, personable_type) VALUES(?,?)")
 		if err != nil {
 			panic(err.Error())
 		}
 		insForm.Exec(wallet.PersonableId, wallet.PersonableType)
 	}
-
-	defer db.Close()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -67,12 +59,10 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 }
 
 func ShowWallet(w http.ResponseWriter, r *http.Request) {
-	db, _ := database.Connect()
-
 	vars := mux.Vars(r)
 	walletId := vars["id"]
 
-	query, err := db.Query("SELECT * FROM wallets WHERE id=?", walletId)
+	query, err := database.Connector.Query("SELECT * FROM wallets WHERE id=?", walletId)
 
 	if err != nil {
 		panic(err.Error())
@@ -95,16 +85,12 @@ func ShowWallet(w http.ResponseWriter, r *http.Request) {
 		wallet.Balance = balance
 	}
 
-	defer db.Close()
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(wallet)
 }
 
 func UpdateWallet(w http.ResponseWriter, r *http.Request) {
-	db, _ := database.Connect()
-
 	vars := mux.Vars(r)
 	walletId := vars["id"]
 
@@ -112,15 +98,13 @@ func UpdateWallet(w http.ResponseWriter, r *http.Request) {
 	var wallet models.Wallet
 	json.Unmarshal(requestBody, &wallet)
 
-	if r.Method == "POST" {
-		updateQuery, err := db.Prepare("UPDATE wallet SET personable_id=?, personable_type=? WHERE id=?")
+	if r.Method == "PUT" {
+		updateQuery, err := database.Connector.Prepare("UPDATE wallets SET personable_id=?, personable_type=? WHERE id=?")
 		if err != nil {
 			panic(err.Error())
 		}
 		updateQuery.Exec(wallet.PersonableId, wallet.PersonableType, walletId)
 	}
-
-	defer db.Close()
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -128,6 +112,17 @@ func UpdateWallet(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteWallet(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint Hit: users")
-	json.NewEncoder(w).Encode(Users)
+	vars := mux.Vars(r)
+	walletId := vars["id"]
+
+	if r.Method == "DELETE" {
+		updateQuery, err := database.Connector.Prepare("DELETE FROM wallets WHERE id=?")
+		if err != nil {
+			panic(err.Error())
+		}
+		updateQuery.Exec(walletId)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
 }

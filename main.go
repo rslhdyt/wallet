@@ -6,74 +6,52 @@ import (
 	"net/http"
 
 	"spenmo_wallet/controllers"
+	"spenmo_wallet/database"
 
 	"github.com/gorilla/mux"
 )
-
-type User struct {
-	Id    string `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
-type Card struct {
-	Id           string `json:"id"`
-	Name         string `json:"name"`
-	WalletId     string `json:"wallet_id"`
-	DailyLimit   string `json:"daily_limit"`
-	MonthlyLimit string `json:"monthly_id"`
-}
-
-var Users []User
-var Cards []Card
 
 func rootPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to the homepage")
 	fmt.Println("Endpoint Hit: rootPage")
 }
 
-// func userShowPage(w http.ResponseWriter, r *http.Request) {
-// 	userID := mux.Vars(r)["id"]
-
-// 	for _, user := range Users {
-// 		if user.Id == userID {
-// 			json.NewEncoder(w).Encode(user)
-// 		}
-// 	}
-// }
-
-// func userCardsPage(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Println("Endpoint Hit: users")
-// 	json.NewEncoder(w).Encode(Users)
-// }
-
-// func userCardsCreatePage(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Println("Endpoint Hit: users")
-// 	json.NewEncoder(w).Encode(Users)
-// }
-
 func main() {
-	Users = []User{
-		{Id: "1", Name: "John", Email: "banana@mail.com"},
-	}
+	// init DB
+	database.Connect()
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", rootPage)
 
-	// router.HandleFunc("/users", usersPage).Methods("POST")
-	// router.HandleFunc("/users/{id}", usersPage).Methods("GET")
+	router.HandleFunc("/users", controllers.IndexUser).Methods("GET")
+	router.HandleFunc("/users", controllers.CreateUser).Methods("POST")
+	router.HandleFunc("/users/{id}", controllers.ShowUser).Methods("GET")
+	router.HandleFunc("/users/{id}", controllers.UpdateUser).Methods("PUT")
+	router.HandleFunc("/users/{id}", controllers.DeleteUser).Methods("DELETE")
+	router.HandleFunc("/users/{id}/cards", controllers.UserCards).Methods("GET")
+
+	router.HandleFunc("/teams", controllers.IndexTeam).Methods("GET")
+	router.HandleFunc("/teams", controllers.CreateTeam).Methods("POST")
+	router.HandleFunc("/teams/{id}", controllers.ShowTeam).Methods("GET")
+	router.HandleFunc("/teams/{id}", controllers.UpdateTeam).Methods("PUT")
+	router.HandleFunc("/teams/{id}", controllers.DeleteTeam).Methods("DELETE")
+	router.HandleFunc("/teams/{id}/users", controllers.TeamUsers).Methods("GET")
+
+	router.HandleFunc("/user_teams", controllers.CreateUserTeam).Methods("POST")
+	router.HandleFunc("/user_teams", controllers.DeleteUserTeam).Methods("DELETE")
 
 	router.HandleFunc("/wallets", controllers.IndexWallet).Methods("GET")
 	router.HandleFunc("/wallets", controllers.CreateWallet).Methods("POST")
 	router.HandleFunc("/wallets/{id}", controllers.ShowWallet).Methods("GET")
-	// router.HandleFunc("/wallets/{id}", updateWalletsApi).Methods("PUT")
-	// router.HandleFunc("/wallets/{id}", deleteWalletsApi).Methods("DELETE")
+	router.HandleFunc("/wallets/{id}", controllers.UpdateWallet).Methods("PUT")
+	router.HandleFunc("/wallets/{id}", controllers.DeleteWallet).Methods("DELETE")
 
-	// router.HandleFunc("/cards", usersPage)
-	// router.HandleFunc("/cards", userCardsPage).Methods("POST")
-	// router.HandleFunc("/cards/{id}", userShowPage).Methods("GET")
-	// router.HandleFunc("/cards/{id}", userCardsCreatePage).Methods("PUT")
-	// router.HandleFunc("/cards/{id}", userCardsCreatePage).Methods("DELETE")
+	router.HandleFunc("/cards", controllers.IndexCard).Methods("POST")
 
-	log.Fatal(http.ListenAndServe(":8081", router))
+	router.HandleFunc("/cards", controllers.CreateCard).Methods("POST")
+	router.HandleFunc("/cards/{id}", controllers.ShowCard).Methods("GET")
+	router.HandleFunc("/cards/{id}", controllers.UpdateCard).Methods("PUT")
+	router.HandleFunc("/cards/{id}", controllers.DeleteCard).Methods("DELETE")
+
+	log.Fatal(http.ListenAndServe(":8081", Limit(router)))
 }
