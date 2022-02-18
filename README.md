@@ -1,5 +1,5 @@
-# Spenmo wallet
-The simple wallet application 💳
+# Wallet
+The simple ewallet application 💳
 
 ## Prerequisites
 - go 1.17.*
