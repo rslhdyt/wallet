@@ -149,7 +149,8 @@ func TeamUsers(w http.ResponseWriter, r *http.Request) {
 	users := []models.User{}
 
 	for selectQuery.Next() {
-		var id, name, email string
+		var id int64
+		var name, email string
 
 		err = selectQuery.Scan(&id, &name, &email)
 

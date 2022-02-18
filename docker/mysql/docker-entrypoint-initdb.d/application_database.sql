@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS `wallets` (
 
 INSERT INTO `wallets` (`personable_id`, `personable_type`) VALUES
 (1, 'User'),
-(1, 'Team');
+(1, 'Team'),
 (3, 'User');
 
 CREATE TABLE IF NOT EXISTS `cards` (

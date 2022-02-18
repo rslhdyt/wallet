@@ -19,14 +19,16 @@ func IndexCard(w http.ResponseWriter, r *http.Request) {
 	cards := []models.Card{}
 
 	for selectQuery.Next() {
-		var id, name, wallet_id, daily_limit, montlhy_limit string
+		var id, wallet_id int64
+		var name string
+		var daily_limit, monthly_limit float64
 
 		err = selectQuery.Scan(
 			&id,
 			&name,
 			&wallet_id,
 			&daily_limit,
-			&montlhy_limit)
+			&monthly_limit)
 
 		if err != nil {
 			panic(err.Error())
@@ -36,7 +38,7 @@ func IndexCard(w http.ResponseWriter, r *http.Request) {
 		card.Name = name
 		card.WalletId = wallet_id
 		card.DailyLimit = daily_limit
-		card.MonthlyLimit = montlhy_limit
+		card.MonthlyLimit = monthly_limit
 
 		cards = append(cards, card)
 	}
@@ -52,15 +54,22 @@ func CreateCard(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(requestBody, &card)
 
 	if r.Method == "POST" {
-		insForm, err := database.Connector.Prepare("INSERT INTO cards(name, wallet_id, daily_limit, monthly_limit) VALUES(?,?,?,?,?)")
+		insForm, err := database.Connector.Prepare("INSERT INTO cards(name, wallet_id, daily_limit, monthly_limit) VALUES(?,?,?,?)")
 		if err != nil {
 			panic(err.Error())
 		}
-		insForm.Exec(
+
+		result, err := insForm.Exec(
 			card.Name,
 			card.WalletId,
 			card.DailyLimit,
 			card.MonthlyLimit)
+
+		if err != nil {
+			panic(err.Error())
+		}
+
+		card.Id, _ = result.LastInsertId()
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -81,7 +90,9 @@ func ShowCard(w http.ResponseWriter, r *http.Request) {
 	card := models.Card{}
 
 	for query.Next() {
-		var id, name, wallet_id, daily_limit, monthly_limit string
+		var id, wallet_id int64
+		var name string
+		var daily_limit, monthly_limit float64
 
 		err = query.Scan(&id, &name, &wallet_id, &daily_limit, &monthly_limit)
 

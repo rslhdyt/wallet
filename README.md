@@ -1,5 +1,13 @@
 # Wallet
-The simple ewallet application 💳
+The wallet is a wallet application that allows you to store and manage your digital assets.
+
+Endpoints:
+- CRUD users
+- CRUD wallets
+- CRUD cards
+
+Rate Limit:
+Currently, the rate limit middlware applied to all endpoints, see the limit.go file.
 
 ## Prerequisites
 - go 1.17.*
@@ -18,3 +26,5 @@ The simple ewallet application 💳
   `http://localhost:8089`
 
 ### TODO
+
+- implement authentication

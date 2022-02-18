@@ -19,7 +19,9 @@ func IndexWallet(w http.ResponseWriter, r *http.Request) {
 	wallets := []models.Wallet{}
 
 	for selectQuery.Next() {
-		var id, personable_id, personable_type, balance string
+		var id, personable_id int64
+		var personable_type string
+		var balance float64
 
 		err = selectQuery.Scan(&id, &personable_id, &personable_type, &balance)
 
@@ -50,7 +52,13 @@ func CreateWallet(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err.Error())
 		}
-		insForm.Exec(wallet.PersonableId, wallet.PersonableType)
+		result, _ := insForm.Exec(wallet.PersonableId, wallet.PersonableType)
+
+		var lastId int64
+		lastId, _ = result.LastInsertId()
+
+		wallet.Id = lastId
+		wallet.Balance = 0
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -71,7 +79,9 @@ func ShowWallet(w http.ResponseWriter, r *http.Request) {
 	wallet := models.Wallet{}
 
 	for query.Next() {
-		var id, personable_id, personable_type, balance string
+		var id, personable_id int64
+		var personable_type string
+		var balance float64
 
 		err = query.Scan(&id, &personable_id, &personable_type, &balance)
 

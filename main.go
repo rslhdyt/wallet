@@ -46,8 +46,7 @@ func main() {
 	router.HandleFunc("/wallets/{id}", controllers.UpdateWallet).Methods("PUT")
 	router.HandleFunc("/wallets/{id}", controllers.DeleteWallet).Methods("DELETE")
 
-	router.HandleFunc("/cards", controllers.IndexCard).Methods("POST")
-
+	router.HandleFunc("/cards", controllers.IndexCard).Methods("GET")
 	router.HandleFunc("/cards", controllers.CreateCard).Methods("POST")
 	router.HandleFunc("/cards/{id}", controllers.ShowCard).Methods("GET")
 	router.HandleFunc("/cards/{id}", controllers.UpdateCard).Methods("PUT")

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"spenmo_wallet/database"
 	"spenmo_wallet/models"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -19,7 +20,8 @@ func IndexUser(w http.ResponseWriter, r *http.Request) {
 	users := []models.User{}
 
 	for selectQuery.Next() {
-		var id, name, email string
+		var id int64
+		var name, email string
 
 		err = selectQuery.Scan(&id, &name, &email)
 
@@ -49,7 +51,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err.Error())
 		}
-		insForm.Exec(user.Name, user.Email)
+		result, _ := insForm.Exec(user.Name, user.Email)
+
+		var lastId int64
+		lastId, _ = result.LastInsertId()
+
+		user.Id = lastId
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -70,7 +77,8 @@ func ShowUser(w http.ResponseWriter, r *http.Request) {
 	user := models.User{}
 
 	for query.Next() {
-		var id, name, email string
+		var id int64
+		var name, email string
 
 		err = query.Scan(&id, &name, &email)
 
@@ -102,6 +110,8 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 			panic(err.Error())
 		}
 		updateQuery.Exec(user.Name, user.Email, userId)
+
+		user.Id, _ = strconv.ParseInt(userId, 10, 64)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -142,7 +152,9 @@ func UserCards(w http.ResponseWriter, r *http.Request) {
 	cards := []models.Card{}
 
 	for cardQuery.Next() {
-		var id, name, wallet_id, daily_limit, montlhy_limit string
+		var id, wallet_id int64
+		var daily_limit, montlhy_limit float64
+		var name string
 
 		err = cardQuery.Scan(
 			&id,
