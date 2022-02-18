@@ -19,12 +19,12 @@ func IndexTeam(w http.ResponseWriter, r *http.Request) {
 	teams := []models.Team{}
 
 	for selectQuery.Next() {
-		var id, name, email string
+		var id int64
+		var name string
 
 		err = selectQuery.Scan(
 			&id,
-			&name,
-			&email)
+			&name)
 
 		if err != nil {
 			panic(err.Error())
@@ -32,7 +32,6 @@ func IndexTeam(w http.ResponseWriter, r *http.Request) {
 
 		team.Id = id
 		team.Name = name
-		team.Email = email
 
 		teams = append(teams, team)
 	}
@@ -48,13 +47,13 @@ func CreateTeam(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(requestBody, &team)
 
 	if r.Method == "POST" {
-		insForm, err := database.Connector.Prepare("INSERT INTO teams(name, email) VALUES(?,?)")
+		insForm, err := database.Connector.Prepare("INSERT INTO teams(name) VALUES(?)")
 		if err != nil {
 			panic(err.Error())
 		}
-		insForm.Exec(
-			team.Name,
-			team.Email)
+
+		result, _ := insForm.Exec(team.Name)
+		team.Id, _ = result.LastInsertId()
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -75,9 +74,10 @@ func ShowTeam(w http.ResponseWriter, r *http.Request) {
 	team := models.Team{}
 
 	for query.Next() {
-		var id, name, email string
+		var id int64
+		var name string
 
-		err = query.Scan(&id, &name, &email)
+		err = query.Scan(&id, &name)
 
 		if err != nil {
 			panic(err.Error())
@@ -85,7 +85,6 @@ func ShowTeam(w http.ResponseWriter, r *http.Request) {
 
 		team.Id = id
 		team.Name = name
-		team.Email = email
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -102,14 +101,12 @@ func UpdateTeam(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(requestBody, &team)
 
 	if r.Method == "PUT" {
-		updateQuery, err := database.Connector.Prepare("UPDATE teams SET " +
-			"name=?, email=? WHERE id=?")
+		updateQuery, err := database.Connector.Prepare("UPDATE teams SET name=? WHERE id=?")
 		if err != nil {
 			panic(err.Error())
 		}
 		updateQuery.Exec(
 			team.Name,
-			team.Email,
 			teamId)
 	}
 

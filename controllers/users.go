@@ -153,7 +153,7 @@ func UserCards(w http.ResponseWriter, r *http.Request) {
 
 	for cardQuery.Next() {
 		var id, wallet_id int64
-		var daily_limit, montlhy_limit float64
+		var daily_limit, monthly_limit float64
 		var name string
 
 		err = cardQuery.Scan(
@@ -161,7 +161,7 @@ func UserCards(w http.ResponseWriter, r *http.Request) {
 			&name,
 			&wallet_id,
 			&daily_limit,
-			&montlhy_limit)
+			&monthly_limit)
 
 		if err != nil {
 			panic(err.Error())
@@ -171,7 +171,7 @@ func UserCards(w http.ResponseWriter, r *http.Request) {
 		card.Name = name
 		card.WalletId = wallet_id
 		card.DailyLimit = daily_limit
-		card.MonthlyLimit = montlhy_limit
+		card.MonthlyLimit = monthly_limit
 
 		cards = append(cards, card)
 	}

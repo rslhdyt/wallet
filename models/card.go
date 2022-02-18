@@ -5,5 +5,5 @@ type Card struct {
 	WalletId     int64   `json:"wallet_id"`
 	Name         string  `json:"name"`
 	DailyLimit   float64 `json:"daily_limit"`
-	MonthlyLimit float64 `json:"montlhy_limit"`
+	MonthlyLimit float64 `json:"monthly_limit"`
 }
